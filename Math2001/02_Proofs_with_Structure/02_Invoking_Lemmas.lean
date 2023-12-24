@@ -12,7 +12,12 @@ example {x : ℚ} (hx : 3 * x = 2) : x ≠ 1 := by
     _ < 1 := by numbers
 
 example {y : ℝ} : y ^ 2 + 1 ≠ 0 := by
-  sorry
+  have : 0 ≤ y^2 := by apply sq_nonneg
+  apply ne_of_gt
+
+  calc
+    0 < 1 := by linarith
+    _ ≤ y^2 + 1 := by aesop
 
 example {a b : ℝ} (h1 : a ^ 2 + b ^ 2 = 0) : a ^ 2 = 0 := by
   apply le_antisymm
@@ -26,7 +31,12 @@ example {a b : ℝ} (h1 : a ^ 2 + b ^ 2 = 0) : a ^ 2 = 0 := by
 
 
 example {m : ℤ} (hm : m + 1 = 5) : 3 * m ≠ 6 := by
-  sorry
+  have hm' : m = 4 := by linarith
+
+  calc
+    3 * m = 12 := by rw [hm']; ring
+    _ ≠ 6 := by linarith
 
 theorem problem2 {s : ℚ} (h1 : 3 * s ≤ -6) (h2 : 2 * s ≥ -4) : s = -2 := by
-  sorry
+  apply le_antisymm
+  repeat (exact by linarith)

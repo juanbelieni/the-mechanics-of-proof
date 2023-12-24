@@ -16,11 +16,10 @@ example {x y : ℤ} (h : 2 * x - y = 4 ∧ y - x + 1 = 2) : x = 5 := by
 example {p : ℚ} (hp : p ^ 2 ≤ 8) : p ≥ -5 := by
   have hp' : -3 ≤ p ∧ p ≤ 3
   · apply abs_le_of_sq_le_sq'
-    calc
-      p ^ 2 ≤ 9 := by addarith [hp]
-      _ = 3 ^ 2 := by numbers
-    numbers
-  sorry
+    repeat (linarith)
+  obtain ⟨hp'1, hp'2⟩ := hp'
+  linarith
+
 
 example {a b : ℝ} (h1 : a - 5 * b = 4) (h2 : b + 2 = 3) : a = 9 ∧ b = 1 := by
   constructor
@@ -49,7 +48,18 @@ example {a b : ℝ} (h1 : a ^ 2 + b ^ 2 = 0) : a = 0 ∧ b = 0 := by
       a ^ 2 ≤ a ^ 2 + b ^ 2 := by extra
       _ = 0 := by rw [h1]
     extra
-  sorry
+  simp at h2
+
+  have h3 : b^2 = 0
+  . calc
+    b^2 = -a^2 := by linarith
+    _ = 0 := by rw [h2]; simp
+  simp at h3
+
+  constructor
+  . apply h2
+  . apply h3
+
 
 /-! # Exercises -/
 
