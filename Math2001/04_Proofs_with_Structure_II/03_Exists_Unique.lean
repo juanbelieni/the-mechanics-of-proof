@@ -20,7 +20,28 @@ example : ∃! a : ℝ, 3 * a + 1 = 7 := by
 
 
 example : ∃! x : ℚ, ∀ a, a ≥ 1 → a ≤ 3 → (a - x) ^ 2 ≤ 1 := by
-  sorry
+  use 2
+  dsimp
+  constructor
+  . intro a h1 h2
+    have h3 : -1 ≤ a - 2 := by linarith
+    have h4 : a - 2 ≤ 1 := by linarith
+    apply sq_le_sq' at h3
+    apply h3 at h4
+    linarith
+  . intro y hy
+    have h1 : (1 - y)^2 ≤ 1 := by apply hy; all_goals (linarith)
+    have h2 : (3 - y)^2 ≤ 1 := by apply hy; all_goals (linarith)
+    have h3 := calc
+      (y - 2)^2 = ((1 - y)^2 + (3 - y)^2 - 2) / 2 := by ring
+      _ ≤ (1 + 1 - 2) / 2 := by linarith
+      _ = 0 := by ring
+    have h4 : (y - 2)^2 = 0 := by
+      apply le_antisymm
+      exact h3
+      apply pow_two_nonneg
+    simp at h4
+    linarith
 
 example {x : ℚ} (hx : ∃! a : ℚ, a ^ 2 = x) : x = 0 := by
   obtain ⟨a, ha1, ha2⟩ := hx

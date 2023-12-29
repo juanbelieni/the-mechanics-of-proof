@@ -20,7 +20,16 @@ example {n : ℕ} (hn : ∀ m, n ∣ m) : n = 1 := by
 
 
 example {a b : ℝ} (h : ∀ x, x ≥ a ∨ x ≤ b) : a ≤ b := by
-  sorry
+  let m := (a + b) / 2
+  have h' : m ≥ a ∨ m ≤ b := by apply h
+  obtain h' | h' := h'
+  calc
+    b = 2 * m - a := by ring
+    _ ≥ a := by linarith
+  calc
+    a = 2 * m - b := by ring
+    _ ≤ b := by linarith
+
 
 example {a b : ℝ} (ha1 : a ^ 2 ≤ 2) (hb1 : b ^ 2 ≤ 2) (ha2 : ∀ y, y ^ 2 ≤ 2 → y ≤ a)
     (hb2 : ∀ y, y ^ 2 ≤ 2 → y ≤ b) :
@@ -28,7 +37,9 @@ example {a b : ℝ} (ha1 : a ^ 2 ≤ 2) (hb1 : b ^ 2 ≤ 2) (ha2 : ∀ y, y ^ 2 
   apply le_antisymm
   · apply hb2
     apply ha1
-  · sorry
+  · apply ha2
+    apply hb1
+
 
 example : ∃ b : ℝ, ∀ x : ℝ, b ≤ x ^ 2 - 2 * x := by
   use -1
@@ -39,7 +50,18 @@ example : ∃ b : ℝ, ∀ x : ℝ, b ≤ x ^ 2 - 2 * x := by
 
 
 example : ∃ c : ℝ, ∀ x y, x ^ 2 + y ^ 2 ≤ 4 → x + y ≥ c := by
-  sorry
+  use -3
+  intro x y h
+  have h := calc
+    (x + y)^2 ≤ (x + y)^2 + (x - y)^2 := by apply le_add_of_nonneg_right; apply sq_nonneg
+    _ = 2 * (x^2 + y^2) := by ring
+    _ ≤ 2 * 4 := by linarith
+    _ ≤ 3^2 := by linarith
+  rw [sq_le_sq, abs_le] at h
+  calc
+    x + y ≥ -|3| := by linarith
+    _ = -3 := by simp [abs_eq_self]; linarith
+
 
 example : forall_sufficiently_large n : ℤ, n ^ 3 ≥ 4 * n ^ 2 + 7 := by
   dsimp

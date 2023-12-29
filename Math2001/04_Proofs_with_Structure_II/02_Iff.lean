@@ -42,7 +42,13 @@ theorem odd_iff_modEq (n : ℤ) : Odd n ↔ n ≡ 1 [ZMOD 2] := by
     dsimp [(· ∣ ·)]
     use k
     addarith [hk]
-  · sorry
+  · intro h
+    obtain ⟨k, hk⟩ := h
+    have hk : n = 2 * k + 1 := by linarith
+    dsimp [Odd]
+    use k
+    exact hk
+
 
 theorem even_iff_modEq (n : ℤ) : Even n ↔ n ≡ 0 [ZMOD 2] := by
   constructor
@@ -52,27 +58,77 @@ theorem even_iff_modEq (n : ℤ) : Even n ↔ n ≡ 0 [ZMOD 2] := by
     dsimp [(· ∣ ·)]
     use k
     addarith [hk]
-  · sorry
+  · intro h
+    obtain ⟨k, hk⟩ := h
+    have hk : n = 2 * k := by linarith
+    dsimp [Even]
+    use k
+    exact hk
 
 example {x : ℝ} : x ^ 2 + x - 6 = 0 ↔ x = -3 ∨ x = 2 := by
-  sorry
+  constructor
+  . intro h
+    have h : (x + 3) * (x - 2) = 0 := by linarith
+    rw [mul_eq_zero] at h
+    obtain h | h := h
+    . left; linarith
+    . right; linarith
+  . intro h
+    obtain h | h := h
+    . calc
+      x^2 + x - 6 = (-3)^2 + (-3) - 6 := by rw [h]
+      _ = 0 := by ring
+    . calc
+      x^2 + x - 6 = (2)^2 + (2) - 6 := by rw [h]
+      _ = 0 := by ring
+
 
 example {a : ℤ} : a ^ 2 - 5 * a + 5 ≤ -1 ↔ a = 2 ∨ a = 3 := by
-  sorry
+  constructor
+  . intro h
+    have h := calc
+      (2 * a - 5)^2 = 4 * (a^2 - 5 * a + 5) + 5 := by ring
+      _ ≤ 4 * (-1) + 5 := by linarith
+      _ = 1^2 := by ring
+    apply abs_le_of_sq_le_sq' at h
+    simp at h
+    obtain ⟨h1, h2⟩ := h
+    have h1 : 2 ≤ a := by linarith
+    have h2 : a ≤ 3 := by linarith
+    apply eq_or_gt_of_le at h1
+    obtain h1 | h1 := h1
+    . left; linarith
+    . right; linarith
+  . intro h
+    obtain h | h := h
+    . calc
+      a^2 - 5 * a + 5 = 2^2 - 5 * 2 + 5 := by rw [h]
+      _ ≤ -1 := by linarith
+    . calc
+      a^2 - 5 * a + 5 = 3^2 - 5 * 3 + 5 := by rw [h]
+      _ ≤ -1 := by linarith
 
 example {n : ℤ} (hn : n ^ 2 - 10 * n + 24 = 0) : Even n := by
   have hn1 :=
     calc (n - 4) * (n - 6) = n ^ 2 - 10 * n + 24 := by ring
       _ = 0 := hn
   have hn2 := eq_zero_or_eq_zero_of_mul_eq_zero hn1
-  sorry
+  dsimp [Even]
+  obtain hn2 | hn2 := hn2
+  . use 2; linarith
+  . use 3; linarith
+
 
 example {n : ℤ} (hn : n ^ 2 - 10 * n + 24 = 0) : Even n := by
   have hn1 :=
     calc (n - 4) * (n - 6) = n ^ 2 - 10 * n + 24 := by ring
       _ = 0 := hn
   rw [mul_eq_zero] at hn1 -- `hn1 : n - 4 = 0 ∨ n - 6 = 0`
-  sorry
+  dsimp [Even]
+  obtain hn1 | hn1 := hn1
+  . use 2; linarith
+  . use 3; linarith
+
 
 example {x y : ℤ} (hx : Odd x) (hy : Odd y) : Odd (x + y + 1) := by
   rw [Int.odd_iff_modEq] at *
@@ -86,7 +142,9 @@ example (n : ℤ) : Even n ∨ Odd n := by
   · left
     rw [Int.even_iff_modEq]
     apply hn
-  · sorry
+  · right
+    rw [Int.odd_iff_modEq]
+    apply hn
 
 /-! # Exercises -/
 

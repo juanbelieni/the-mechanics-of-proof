@@ -58,15 +58,24 @@ example (n : ℤ) (hn : n ^ 2 + n + 1 ≡ 1 [ZMOD 3]) :
 example {p : ℕ} (hp : 2 ≤ p) (H : ∀ m : ℕ, 1 < m → m < p → ¬m ∣ p) : Prime p := by
   constructor
   · apply hp -- show that `2 ≤ p`
-  intro m hmp
-  have hp' : 0 < p := by extra
-  have h1m : 1 ≤ m := Nat.pos_of_dvd_of_pos hmp hp'
-  obtain hm | hm_left : 1 = m ∨ 1 < m := eq_or_lt_of_le h1m
-  · -- the case `m = 1`
+  intro m h_m_dvd_p
+  have h_0_lt_p : 0 < p := by extra
+  have h_1_le_m : 1 ≤ m := Nat.pos_of_dvd_of_pos h_m_dvd_p h_0_lt_p
+  obtain h_1_eq_m | h_1_lt_m : 1 = m ∨ 1 < m := eq_or_lt_of_le h_1_le_m
+  · -- m = 1
     left
-    addarith [hm]
-  -- the case `1 < m`
-  sorry
+    exact by rw [h_1_eq_m]
+  . -- 1 < m
+    right
+    obtain h_m_lt_p_not_m_dvd_p : m < p → ¬m ∣ p  := by apply H; exact h_1_lt_m
+    obtain h_m_le_p : m ≤ p := Nat.le_of_dvd h_0_lt_p h_m_dvd_p
+    obtain h_m_eq_p | h_m_lt_p : m = p ∨ m < p := eq_or_lt_of_le h_m_le_p
+    . -- m = p
+      exact h_m_eq_p
+    . -- m < p
+      obtain h_not_m_dvd_p := h_m_lt_p_not_m_dvd_p h_m_lt_p
+      contradiction
+
 
 example : Prime 5 := by
   apply prime_test
@@ -84,7 +93,31 @@ example : Prime 5 := by
 
 example {a b c : ℕ} (ha : 0 < a) (hb : 0 < b) (hc : 0 < c)
     (h_pyth : a ^ 2 + b ^ 2 = c ^ 2) : 3 ≤ a := by
-  sorry
+  obtain h_a_le_2 | h_2_lt_a := le_or_lt a 2
+  . obtain h_b_le_1 | h_1_lt_b := le_or_lt b 1
+    . have h_c_sq_lt_9 : c^2 < 3^2 := calc
+        c^2 = a^2 + b^2 := by linarith
+        _ ≤ 2^2 + 1^2 := by rel [h_a_le_2, h_b_le_1]
+        _ < 3^2 := by linarith
+      have h_c_lt_3 : c < 3 := by cancel 2 at h_c_sq_lt_9;
+      interval_cases a
+      <;> interval_cases c
+      <;> interval_cases b
+      <;> simp_arith at h_pyth
+    . have h_b_sq_lt_c_sq : b^2 < c^2 := by calc
+        b^2 < a^2 + b^2 := by apply lt_add_of_pos_left; aesop
+        _ = c^2 := by linarith
+      have h_c_sq_lt_b_1_sq : c^2 < (b + 1)^2 := by calc
+        c^2 = a^2 + b^2 := by rw [h_pyth]
+        _ ≤ 2^2 + b^2 := by rel [h_a_le_2]
+        _ = b^2 + 2 * 2 := by ring
+        _ ≤ b^2 + 2 * b := by linarith
+        _ < (b + 1)^2 := by linarith
+      have h_b_1_le_c : b + 1 <= c := by cancel 2 at h_b_sq_lt_c_sq
+      have h_b_1_gt_c : b + 1 > c := by cancel 2 at h_c_sq_lt_b_1_sq
+      have h_not_b_1_le_c : ¬ b + 1 ≤ c := not_le_of_gt h_b_1_gt_c
+      contradiction
+  . exact h_2_lt_a
 
 /-! # Exercises -/
 
